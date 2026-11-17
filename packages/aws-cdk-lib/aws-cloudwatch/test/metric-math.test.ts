@@ -644,6 +644,33 @@ describe('Metric Math', () => {
       ]);
     });
 
+    test('metric used in a MathExpression and also added top-level is ordered as visible', () => {
+      // GIVEN - 'a' is first discovered as a constituent of the first expression,
+      // and only afterwards added as a top-level (visible) metric
+      const graph = new GraphWidget({
+        left: [
+          new MathExpression({
+            expression: 'a + 1',
+            usingMetrics: { a },
+          }),
+          a,
+          new MathExpression({
+            expression: 'b + 1',
+            usingMetrics: { b },
+          }),
+        ],
+      });
+
+      // THEN - 'a' keeps its position among the visible metrics,
+      // and only the invisible constituent 'b' moves to the end
+      graphMetricsAre(graph, [
+        [{ expression: 'a + 1', label: 'a + 1' }],
+        ['Test', 'ACount', { id: 'a' }],
+        [{ expression: 'b + 1', label: 'b + 1' }],
+        ['Test', 'BCount', { visible: false, id: 'b' }],
+      ]);
+    });
+
     test('can use percentiles in expression metrics in graphs', () => {
       // GIVEN
       const graph = new GraphWidget({

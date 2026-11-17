@@ -26,8 +26,13 @@ export function allMetricsGraphJson(left: IMetric[], right: IMetric[]): any[] {
   mset.addTopLevel('left', ...left);
   mset.addTopLevel('right', ...right);
 
+  // Render visible metrics before hidden ones
+  const visible = mset.entries.filter(entry => entry.tag !== undefined);
+  const hidden = mset.entries.filter(entry => entry.tag === undefined);
+  const entries = [...visible, ...hidden];
+
   // Render all metrics from the set.
-  return mset.entries.map(entry => new DropEmptyObjectAtTheEndOfAnArray(metricGraphJson(entry.metric, entry.tag, entry.id)));
+  return entries.map(entry => new DropEmptyObjectAtTheEndOfAnArray(metricGraphJson(entry.metric, entry.tag, entry.id)));
 }
 
 // The options for both search expression and math expression are same. Thus, can be handled by a common function.
@@ -160,11 +165,9 @@ export class MetricSet<A> {
 
   /**
    * Access all the accumulated timeseries entries
-   *
-   * Metrics are sorted by ascending level, so "Primary" metrics appear first.
    */
   public get entries(): ReadonlyArray<MetricEntry<A>> {
-    return this.metrics.sort((a, b) => a.level - b.level);
+    return this.metrics;
   }
 
   /**
